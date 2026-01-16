@@ -143,13 +143,21 @@ fig2 = px.bar(
     title="Genre-wise Global Sales"
 )
 
+# Filter years between 2010 and 2020
+year_sales_filtered = year_sales[
+    (year_sales["year"] >= 2010) & (year_sales["year"] <= 2020)
+]
+
 fig3 = px.line(
-    year_sales,
+    year_sales_filtered,
     x="year",
     y="global_sales",
-    title="Global Sales Trend Over Time",
+    title="Global Sales Trend (2010–2020)",
     markers=True
 )
+
+st.plotly_chart(fig3, use_container_width=True)
+
 
 c1, c2 = st.columns(2)
 with c1:
