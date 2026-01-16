@@ -1,11 +1,9 @@
 # =====================================================
-# Multi-Platform Video Game Sales Analytics
-# Company-Level Dashboard
+# Video Game Sales Analytics
 # =====================================================
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 
 from sklearn.model_selection import train_test_split
@@ -13,7 +11,6 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.impute import SimpleImputer
 
 # =====================================================
 # PAGE CONFIG
@@ -26,73 +23,24 @@ st.set_page_config(
 )
 
 # =====================================================
-# UI STYLING
-# =====================================================
-
-st.markdown("""
-<style>
-.main { padding: 1.5rem; }
-h1, h2 { color: #1f2937; }
-.block-container { padding-top: 1.5rem; }
-</style>
-""", unsafe_allow_html=True)
-
-# =====================================================
 # TITLE
 # =====================================================
 
 st.title("🎮 Video Game Sales Analytics")
 
 # =====================================================
-# DATA LOADING
+# DATA LOADING (NO CLEANING)
 # =====================================================
 
 @st.cache_data
 def load_data():
+    ps4_df = pd.read_csv("PS4.csv")
+    xbox_df = pd.read_csv("XboxOne.csv")
 
-    def standardize(df, platform_name=None):
-        cols = {c.lower(): c for c in df.columns}
+    ps4_df["platform"] = "PS4"
+    xbox_df["platform"] = "Xbox One"
 
-        def find(keys):
-            for k in cols:
-                if any(word in k for word in keys):
-                    return cols[k]
-            return None
-
-        df = df.rename(columns={
-            find(["name", "game", "title"]): "name",
-            find(["year"]): "year",
-            find(["global_sales", "globalsales", "global"]): "global_sales",
-            find(["genre"]): "genre",
-            find(["publisher"]): "publisher",
-            find(["platform"]): "platform",
-        })
-
-        if "platform" not in df.columns:
-            df["platform"] = platform_name
-
-        return df[[
-            "name", "platform", "year",
-            "genre", "publisher", "global_sales"
-        ]]
-
-    global_df = pd.read_csv("Video_Games_Sales_as_at_22_Dec_2016.csv", encoding="latin1")
-    ps4_df = pd.read_csv("PS4_GamesSales.csv", encoding="latin1")
-    xbox_df = pd.read_csv("XboxOne_GameSales.csv", encoding="latin1")
-
-    global_df = standardize(global_df)
-    ps4_df = standardize(ps4_df, "PS4")
-    xbox_df = standardize(xbox_df, "Xbox One")
-
-    df = pd.concat([global_df, ps4_df, xbox_df], ignore_index=True)
-
-    df["year"] = pd.to_numeric(df["year"], errors="coerce")
-    df.dropna(subset=["global_sales"], inplace=True)
-
-    for col in ["platform", "genre", "publisher"]:
-        df[col] = df[col].fillna("Unknown")
-
-    return df
+    return pd.concat([ps4_df, xbox_df], ignore_index=True)
 
 
 df = load_data()
@@ -104,9 +52,10 @@ df = load_data()
 st.subheader("📌 Key Business Metrics")
 
 k1, k2, k3 = st.columns(3)
-k1.metric("🎯 Total Games", f"{df.shape[0]:,}")
-k2.metric("💰 Total Global Sales (M)", f"{df['global_sales'].sum():.2f}")
-k3.metric("📊 Avg Sales per Game (M)", f"{df['global_sales'].mean():.2f}")
+
+k1.metric("🎯 Total Games", df.shape[0])
+k2.metric("💰 Total Global Sales (M)", round(df["Global"].sum(), 2))
+k3.metric("📊 Avg Sales per Game (M)", round(df["Global"].mean(), 2))
 
 st.divider()
 
@@ -116,34 +65,44 @@ st.divider()
 
 st.subheader("📊 Sales Insights")
 
-platform_sales = df.groupby("platform")["global_sales"].sum().reset_index()
+# Platform-wise sales
+platform_sales = df.groupby("platform")["Global"].sum().reset_index()
+
+# Genre-wise sales
 genre_sales = (
-    df.groupby("genre")["global_sales"]
+    df.groupby("Genre")["Global"]
     .sum()
     .reset_index()
-    .sort_values("global_sales", ascending=False)
+    .sort_values("Global", ascending=False)
 )
-year_sales = df.groupby("year")["global_sales"].sum().reset_index()
 
+# Year-wise sales
+year_sales = df.groupby("Year")["Global"].sum().reset_index()
+
+# Charts
 fig1 = px.bar(
     platform_sales,
     x="platform",
-    y="global_sales",
+    y="Global",
     title="Platform-wise Global Sales",
-    labels={"global_sales": "Sales (Million Units)"}
+    labels={"Global": "Sales (Million Units)"}
 )
 
 fig2 = px.bar(
     genre_sales,
-    x="global_sales",
-    y="genre",
+    x="Global",
+    y="Genre",
     orientation="h",
     title="Genre-wise Global Sales"
 )
 
-year_sales_filtered = year_sales[
-    (year_sales["year"] >= 2010) & (year_sales["year"] <= 2020)
-]
+fig3 = px.line(
+    year_sales,
+    x="Year",
+    y="Global",
+    title="Year-wise Global Sales Trend",
+    markers=True
+)
 
 c1, c2 = st.columns(2)
 
@@ -153,19 +112,52 @@ with c1:
 with c2:
     st.plotly_chart(fig2, use_container_width=True)
 
-if year_sales_filtered.empty:
-    st.warning("No sales data available between 2010 and 2020")
-else:
-    fig3 = px.line(
-        year_sales_filtered,
-        x="year",
-        y="global_sales",
-        title="Global Sales Trend (2010–2020)",
-        markers=True
-    )
-    st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig3, use_container_width=True)
 
 st.divider()
+
+# =====================================================
+# PS4 COUNTRY SALES ANALYSIS
+# =====================================================
+
+ps4_df = df[df["platform"] == "PS4"]
+
+country_sales = pd.DataFrame({
+    "Country": ["North America", "Europe", "Japan", "Rest of World"],
+    "Sales": [
+        ps4_df["North America"].sum(),
+        ps4_df["Europe"].sum(),
+        ps4_df["Japan"].sum(),
+        ps4_df["Rest of World"].sum()
+    ]
+})
+
+top_country = country_sales.loc[country_sales["Sales"].idxmax()]
+
+st.subheader("🌍 PS4 Sales by Country")
+
+fig_country = px.bar(
+    country_sales,
+    x="Country",
+    y="Sales",
+    title="🌎 PS4 Regional Sales Distribution",
+    color="Sales",
+    color_continuous_scale="Blues",
+    text_auto=".2f"
+)
+
+fig_country.update_layout(
+    xaxis_title="Region",
+    yaxis_title="Sales (Million Units)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)"
+)
+
+st.plotly_chart(fig_country, use_container_width=True)
+
+
+
+
 
 # =====================================================
 # MODEL TRAINING
@@ -173,17 +165,11 @@ st.divider()
 
 @st.cache_resource
 def train_model(data):
-
-    X = data[["platform", "genre"]]
-    y = data["global_sales"]
-
-    categorical_pipeline = Pipeline([
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore"))
-    ])
+    X = data[["platform", "Genre"]]
+    y = data["Global"]
 
     preprocessor = ColumnTransformer([
-        ("cat", categorical_pipeline, ["platform", "genre"])
+        ("cat", OneHotEncoder(handle_unknown="ignore"), ["platform", "Genre"])
     ])
 
     model = Pipeline([
@@ -203,7 +189,7 @@ def train_model(data):
     return model
 
 
-with st.spinner("Preparing predictive model..."):
+with st.spinner("Training prediction model..."):
     model = train_model(df)
 
 # =====================================================
@@ -217,21 +203,23 @@ with st.form("prediction_form"):
 
     with c1:
         u_platform = st.selectbox(
-            "Platform", sorted(df["platform"].unique())
+            "Platform",
+            sorted(df["platform"].unique())
         )
 
     with c2:
         u_genre = st.selectbox(
-            "Genre", sorted(df["genre"].unique())
+            "Genre",
+            sorted(df["Genre"].unique())
         )
 
     submit = st.form_submit_button("🔮 Predict Sales")
 
 if submit:
-    input_df = pd.DataFrame([{
-        "platform": u_platform,
-        "genre": u_genre
-    }])
+    input_df = pd.DataFrame({
+        "platform": [u_platform],
+        "Genre": [u_genre]
+    })
 
     prediction = model.predict(input_df)[0]
 
