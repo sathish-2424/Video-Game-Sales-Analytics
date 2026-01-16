@@ -1,6 +1,6 @@
 # 🎮 Video Game Sales Analytics
 
-An interactive web application for analyzing and predicting video game sales data for PS4 and Xbox One platforms. This project provides comprehensive analytics, visualizations, and machine learning-based sales predictions.
+An interactive web application for analyzing and predicting video game sales data for PS4 and Xbox One platforms. This project provides comprehensive analytics, visualizations, and machine learning-based sales predictions using a Random Forest model.
 
 ## 📋 Table of Contents
 
@@ -10,8 +10,9 @@ An interactive web application for analyzing and predicting video game sales dat
 - [Installation](#installation)
 - [Usage](#usage)
 - [Data Sources](#data-sources)
-- [Features Overview](#features-overview)
+- [Dashboard Features](#dashboard-features)
 - [Machine Learning Model](#machine-learning-model)
+- [Future Enhancements](#future-enhancements)
 
 ## ✨ Features
 
@@ -41,18 +42,16 @@ An interactive web application for analyzing and predicting video game sales dat
 ```
 Video-Game-Sales-Analytics/
 │
-├── streamlit_app.py          # Main Streamlit application
-├── Data_Clean.ipynb          # Data cleaning and preprocessing notebook
-├── requirements.txt          # Python dependencies
-├── VG_Sales_Analysis.pbix    # Power BI analysis file
+├── streamlit_app.py              # Main Streamlit application
+├── Data_Clean.ipynb              # Data cleaning and preprocessing notebook
+├── requirements.txt              # Python dependencies
 │
 ├── Data Files:
-│   ├── PS4_GamesSales.csv    # Raw PS4 sales data
-│   ├── XboxOne_GameSales.csv # Raw Xbox One sales data
-│   ├── PS4.csv               # Cleaned PS4 data
-│   └── XboxOne.csv           # Cleaned Xbox One data
+│   ├── Video_Game.csv            # Combined and cleaned video game sales data
+│   ├── PS4_GamesSales.csv        # Raw PS4 sales data
+│   └── XboxOne_GameSales.csv     # Raw Xbox One sales data
 │
-└── README.md                 # Project documentation
+└── README.md                      # Project documentation
 ```
 
 ## 🚀 Installation
@@ -99,6 +98,32 @@ Video-Game-Sales-Analytics/
    - The app will automatically open in your default web browser
    - If not, navigate to `http://localhost:8501`
 
+### Dashboard Features
+
+The interactive dashboard includes:
+
+1. **Key Metrics Section**
+   - Total number of games analyzed
+   - Total global sales in millions
+   - Average sales per game
+
+2. **Sales Insights**
+   - Platform-wise global sales comparison (PS4 vs Xbox One)
+   - Genre-wise sales analysis with ranking
+   - Year-wise sales trends with interactive line chart
+
+3. **Regional Analysis**
+   - PS4 sales distribution across regions:
+     - North America
+     - Europe
+     - Japan
+     - Rest of World
+
+4. **Sales Prediction Simulator**
+   - Select a platform (PS4 or Xbox One)
+   - Choose a game genre
+   - Get predicted global sales using the trained Random Forest model
+
 ### Using the Data Cleaning Notebook
 
 1. **Open Jupyter Notebook**
@@ -107,103 +132,93 @@ Video-Game-Sales-Analytics/
    ```
 
 2. **Run the Data_Clean.ipynb notebook**
-   - This notebook processes the raw CSV files
+   - Processes raw CSV files (`PS4_GamesSales.csv` and `XboxOne_GameSales.csv`)
    - Handles missing values, duplicates, and data standardization
-   - Generates cleaned CSV files (`PS4.csv` and `XboxOne.csv`)
-
-### Features in the Dashboard
-
-1. **Key Metrics Section**
-   - View total number of games analyzed
-   - See total global sales in millions
-   - Check average sales per game
-
-2. **Sales Insights**
-   - Compare sales between PS4 and Xbox One platforms
-   - Analyze which genres perform best
-   - Track sales trends over the years
-
-3. **Regional Analysis**
-   - Explore PS4 sales distribution across different regions
-   - Identify top-performing markets
-
-4. **Sales Prediction**
-   - Select a platform (PS4 or Xbox One)
-   - Choose a game genre
-   - Get predicted global sales in million units
+   - Generates cleaned combined dataset (`Video_Game.csv`)
 
 ## 📊 Data Sources
 
-The project uses video game sales data including:
-- **PS4 Games**: 1,033 games after cleaning
-- **Xbox One Games**: 613 games after cleaning
+The project uses combined video game sales data from:
+- **PS4 Games**: 1,033 games
+- **Xbox One Games**: 613 games
+- **Total Dataset**: ~1,646 games (after cleaning and preprocessing)
 
 ### Data Fields
 
 - **Game**: Name of the video game
 - **Year**: Release year
-- **Genre**: Game genre (Action, Adventure, RPG, etc.)
+- **Genre**: Game genre (Action, Adventure, RPG, Sports, etc.)
 - **Publisher**: Game publisher
 - **North America**: Sales in North America (million units)
 - **Europe**: Sales in Europe (million units)
 - **Japan**: Sales in Japan (million units)
 - **Rest of World**: Sales in other regions (million units)
 - **Global**: Total global sales (million units)
+- **Platform**: Gaming platform (PS4 or Xbox One)
 
-## 🎯 Features Overview
+## 🎯 Dashboard Features
 
 ### 1. Key Business Metrics
 - Real-time calculation of total games, sales, and averages
-- Displayed in an easy-to-read metric format
+- Displayed in metric cards for quick insights
 
 ### 2. Interactive Charts
 - **Bar Charts**: Platform and genre comparisons
-- **Line Charts**: Temporal sales trends
+- **Line Charts**: Temporal sales trends over years
 - **Horizontal Bar Charts**: Genre performance rankings
-- All charts are interactive with Plotly
+- All charts are interactive and built with Plotly
 
 ### 3. Regional Sales Analysis
 - Detailed breakdown of PS4 sales by region
-- Visual representation of market distribution
-- Color-coded charts for easy interpretation
+- Color-coded bar chart for market distribution
+- Quick identification of top-performing regions
 
 ### 4. Sales Prediction Model
 - **Algorithm**: Random Forest Regressor
 - **Features**: Platform and Genre
-- **Training**: 70% of data used for training
+- **Training Data**: 70% of combined dataset
 - **Output**: Predicted global sales in million units
 
 ## 🤖 Machine Learning Model
 
-The project uses a **Random Forest Regressor** to predict game sales:
+The project uses a **Random Forest Regressor** for sales prediction:
 
+### Model Architecture
+- **Algorithm**: Random Forest Regressor
+- **Number of Estimators**: 300 trees
 - **Preprocessing**: One-hot encoding for categorical features (Platform, Genre)
-- **Model Parameters**:
-  - 300 estimators
-  - Random state: 42
-  - Parallel processing enabled
-- **Input Features**: Platform, Genre
-- **Target Variable**: Global Sales (million units)
+- **Random State**: 42 (for reproducibility)
+- **Parallel Processing**: Enabled (n_jobs=-1)
 
-### Model Training
-The model is trained on 70% of the combined dataset and cached for performance using Streamlit's caching mechanism.
+### Model Workflow
+1. Input features: Platform and Genre (categorical variables)
+2. One-hot encoding converts categorical features to numerical format
+3. Random Forest model trained on 70% of the dataset
+4. Predictions generated for user-selected platform and genre combinations
+5. Model is cached using Streamlit for optimal performance
 
-## 📝 Notes
-
-- The data cleaning notebook should be run first to generate the cleaned CSV files
-- Missing values in Year and Publisher columns are handled during preprocessing
-- Duplicate entries are removed based on Game and Year combination
-- The Streamlit app expects `PS4.csv` and `XboxOne.csv` to be in the root directory
+### Output
+- Predicted global sales in **million units**
+- Results displayed in real-time on the dashboard
 
 ## 🔮 Future Enhancements
 
 Potential improvements for the project:
 - Add more platforms (Nintendo Switch, PC, etc.)
-- Include additional features for prediction (Publisher, Year, etc.)
+- Include additional predictive features (Publisher, Year, etc.)
 - Implement model evaluation metrics (R², MAE, RMSE)
-- Add data export functionality
-- Create time series forecasting
-- Add user authentication for personalized dashboards
+- Add data export/download functionality
+- Create time series forecasting for future sales
+- Add interactive filtering by region or publisher
+- Implement user authentication for personalized dashboards
+- Deploy to cloud platform (Heroku, AWS, Azure)
+
+## 📝 Notes
+
+- Ensure `Video_Game.csv` is in the root directory before running the Streamlit app
+- The data cleaning notebook should be run first if processing raw data
+- Missing values and duplicates are handled during data preprocessing
+- The Streamlit app caches data and model training for improved performance
 
 ## 📄 License
 
@@ -211,8 +226,8 @@ This project is open source and available for educational and research purposes.
 
 ## 👤 Author
 
-Created as a data analytics and machine learning project for video game sales analysis.
+Created as a data analytics and machine learning project for video game sales analysis and prediction.
 
 ---
 
-**Enjoy exploring video game sales data! 🎮📊**
+**Happy exploring! 🎮📊**

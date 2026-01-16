@@ -29,19 +29,13 @@ st.set_page_config(
 st.title("🎮 Video Game Sales Analytics")
 
 # =====================================================
-# DATA LOADING (NO CLEANING)
+# DATA LOADING (CLEAN DATA)
 # =====================================================
 
 @st.cache_data
 def load_data():
-    ps4_df = pd.read_csv("PS4.csv")
-    xbox_df = pd.read_csv("XboxOne.csv")
-
-    ps4_df["platform"] = "PS4"
-    xbox_df["platform"] = "Xbox One"
-
-    return pd.concat([ps4_df, xbox_df], ignore_index=True)
-
+    df = pd.read_csv("Video_Game.csv")
+    return df
 
 df = load_data()
 
@@ -66,7 +60,7 @@ st.divider()
 st.subheader("📊 Sales Insights")
 
 # Platform-wise sales
-platform_sales = df.groupby("platform")["Global"].sum().reset_index()
+platform_sales = df.groupby("Platform")["Global"].sum().reset_index()
 
 # Genre-wise sales
 genre_sales = (
@@ -82,7 +76,7 @@ year_sales = df.groupby("Year")["Global"].sum().reset_index()
 # Charts
 fig1 = px.bar(
     platform_sales,
-    x="platform",
+    x="Platform",
     y="Global",
     title="Platform-wise Global Sales",
     labels={"Global": "Sales (Million Units)"}
@@ -120,7 +114,7 @@ st.divider()
 # PS4 COUNTRY SALES ANALYSIS
 # =====================================================
 
-ps4_df = df[df["platform"] == "PS4"]
+ps4_df = df[df["Platform"] == "PS4"]
 
 country_sales = pd.DataFrame({
     "Country": ["North America", "Europe", "Japan", "Rest of World"],
@@ -131,8 +125,6 @@ country_sales = pd.DataFrame({
         ps4_df["Rest of World"].sum()
     ]
 })
-
-top_country = country_sales.loc[country_sales["Sales"].idxmax()]
 
 st.subheader("🌍 PS4 Sales by Country")
 
@@ -146,18 +138,9 @@ fig_country = px.bar(
     text_auto=".2f"
 )
 
-fig_country.update_layout(
-    xaxis_title="Region",
-    yaxis_title="Sales (Million Units)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)"
-)
-
 st.plotly_chart(fig_country, use_container_width=True)
 
-
-
-
+st.divider()
 
 # =====================================================
 # MODEL TRAINING
@@ -165,11 +148,11 @@ st.plotly_chart(fig_country, use_container_width=True)
 
 @st.cache_resource
 def train_model(data):
-    X = data[["platform", "Genre"]]
+    X = data[["Platform", "Genre"]]
     y = data["Global"]
 
     preprocessor = ColumnTransformer([
-        ("cat", OneHotEncoder(handle_unknown="ignore"), ["platform", "Genre"])
+        ("cat", OneHotEncoder(handle_unknown="ignore"), ["Platform", "Genre"])
     ])
 
     model = Pipeline([
@@ -188,7 +171,6 @@ def train_model(data):
     model.fit(X_train, y_train)
     return model
 
-
 with st.spinner("Training prediction model..."):
     model = train_model(df)
 
@@ -204,7 +186,7 @@ with st.form("prediction_form"):
     with c1:
         u_platform = st.selectbox(
             "Platform",
-            sorted(df["platform"].unique())
+            sorted(df["Platform"].unique())
         )
 
     with c2:
@@ -217,7 +199,7 @@ with st.form("prediction_form"):
 
 if submit:
     input_df = pd.DataFrame({
-        "platform": [u_platform],
+        "Platform": [u_platform],
         "Genre": [u_genre]
     })
 
