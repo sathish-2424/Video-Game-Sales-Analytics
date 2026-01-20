@@ -64,7 +64,7 @@ Multimedia-Video-Game-Sales-Analytics/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/Multimedia-Video-Game-Sales-Analytics.git
+   git clone https://github.com/sathish-2424/Multimedia-Video-Game-Sales-Analytics
    cd Multimedia-Video-Game-Sales-Analytics
    ```
 
