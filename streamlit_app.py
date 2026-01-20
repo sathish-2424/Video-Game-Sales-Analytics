@@ -1,6 +1,4 @@
-# =====================================================
 # Video Game Sales Analytics
-# =====================================================
 
 import streamlit as st
 import pandas as pd
@@ -12,9 +10,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 
-# =====================================================
+
 # PAGE CONFIG
-# =====================================================
 
 st.set_page_config(
     page_title="Multimedia video game sales Analysis",
@@ -22,15 +19,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# =====================================================
+
 # TITLE
-# =====================================================
 
 st.title("🎮 Multimedia video game sales Analysis")
 
-# =====================================================
-# DATA LOADING (CLEAN DATA)
-# =====================================================
+
+# DATA LOADING
 
 @st.cache_data
 def load_data():
@@ -39,9 +34,8 @@ def load_data():
 
 df = load_data()
 
-# =====================================================
+
 # KPI METRICS
-# =====================================================
 
 st.subheader("📌 Key Business Metrics")
 
@@ -53,9 +47,8 @@ k3.metric("📊 Avg Sales per Game (M)", round(df["Global"].mean(), 2))
 
 st.divider()
 
-# =====================================================
+
 # VISUAL ANALYTICS
-# =====================================================
 
 st.subheader("📊 Sales Insights")
 
@@ -110,9 +103,8 @@ st.plotly_chart(fig3, use_container_width=True)
 
 st.divider()
 
-# =====================================================
+
 # PS4 COUNTRY SALES ANALYSIS
-# =====================================================
 
 ps4_df = df[df["Platform"] == "PS4"]
 
@@ -126,13 +118,13 @@ country_sales = pd.DataFrame({
     ]
 })
 
-st.subheader("🌍 PS4 Sales by Country")
+st.subheader("🌍  Sales by Country")
 
 fig_country = px.bar(
     country_sales,
     x="Country",
     y="Sales",
-    title="🌎 PS4 Regional Sales Distribution",
+    title="🌎  Regional Sales Distribution",
     color="Sales",
     color_continuous_scale="Blues",
     text_auto=".2f"
@@ -142,9 +134,8 @@ st.plotly_chart(fig_country, use_container_width=True)
 
 st.divider()
 
-# =====================================================
+
 # MODEL TRAINING
-# =====================================================
 
 @st.cache_resource
 def train_model(data):
@@ -174,9 +165,8 @@ def train_model(data):
 with st.spinner("Training prediction model..."):
     model = train_model(df)
 
-# =====================================================
+
 # PREDICTION SECTION
-# =====================================================
 
 st.subheader("🎯 Sales Prediction Simulator")
 
@@ -209,8 +199,7 @@ if submit:
         f"📈 Predicted Global Sales: **{prediction:.2f} Million Units**"
     )
 
-# =====================================================
+
 # FOOTER
-# =====================================================
 
 st.markdown("---")
