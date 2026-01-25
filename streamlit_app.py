@@ -56,12 +56,12 @@ genre_sales = (
 # Year-wise sales
 year_sales = df.groupby("Year")["Global"].sum().reset_index()
 
-# 🔧 UPDATED: Convert Year to categorical (string)
+# 🔧  Convert Year to categorical (string)
 year_sales["Year"] = year_sales["Year"].astype(str)
 
 # -------------------- CHARTS --------------------
 
-# 🔧 UPDATED: Data labels enabled
+# 🔧  Data labels enabled
 fig1 = px.bar(
     platform_sales,
     x="Platform",
@@ -69,13 +69,13 @@ fig1 = px.bar(
     title="Platform-wise Global Sales",
     labels={"Global": "Sales (Million Units)"},
     text_auto=".2f",
-    color_discrete_sequence=["#4CC9F0"]
+    color_discrete_sequence=["#4895EF"]
 )
 
 fig1.update_traces(textposition="outside")
 
 
-# 🔧 UPDATED: Data labels enabled (horizontal bar)
+# 🔧  Data labels enabled (horizontal bar)
 fig2 = px.bar(
     genre_sales,
     x="Global",
@@ -89,7 +89,7 @@ fig2 = px.bar(
 fig2.update_traces(textposition="outside")
 
 
-# 🔧 UPDATED: Line chart categorical + data labels
+# 🔧  Line chart categorical + data labels
 fig3 = px.line(
     year_sales,
     x="Year",
@@ -105,6 +105,7 @@ fig3.update_xaxes(
 )
 
 fig3.update_traces(
+    mode="lines+markers+text",
     line=dict(color="#4895EF", width=3),
     marker=dict(size=8, color="#4895EF"),
     text=year_sales["Global"],
@@ -143,15 +144,14 @@ country_sales = pd.DataFrame({
 
 st.subheader("🌍 Sales by Country")
 
-# 🔧 UPDATED: Already had labels, kept clean
+# 🔧  Already had labels, kept clean
 fig_country = px.bar(
     country_sales,
     x="Country",
     y="Sales",
     title="🌎 Regional Sales Distribution",
-    color="Sales",
-    color_continuous_scale="Blues",
-    text_auto=".2f"
+    text_auto=".2f",
+    color_discrete_sequence=["#4895EF"]
 )
 
 st.plotly_chart(fig_country, use_container_width=True)
